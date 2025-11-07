@@ -1,0 +1,36 @@
+version: 2
+
+sources:
+  - name: tpch
+    database: snowflake_sample_data
+    schema: tpch_sf1
+    freshness:
+      warn_after: {count: 12, period: hour}
+      error_after: {count: 24, period: hour}
+    tables:
+      - name: orders
+        description: "tpc-h orders table (primary key: o_orderkey)"
+        columns:
+          - name: o_orderkey
+            description: "primary key for orders"
+            tests:
+              - unique
+              - not_null
+      - name: lineitem
+        description: "tpc-h lineitem table (fk: l_orderkey → orders.o_orderkey)"
+        columns:
+          - name: l_orderkey
+            description: "foreign key to orders.o_orderkey (case-sensitive: l_orderkey)"
+            tests:
+              - not_null
+              - relationships:
+                  to: source('tpch', 'orders')
+                  field: o_orderkey
+                  severity: error
+          - name: l_partkey
+            description: "foreign key to part.p_partkey (adicione source se testar)"
+            tests:
+              - not_null
+          - name: l_linenumber
+            tests:
+              - not_null
